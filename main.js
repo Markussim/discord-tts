@@ -5,9 +5,9 @@ const {
   createAudioResource,
   createAudioPlayer,
 } = require("@discordjs/voice");
-const { token, channelID, sayUser } = require("./config.json");
 const { Readable } = require("stream");
 const textToSpeech = require("@google-cloud/text-to-speech");
+const dotenv = require("dotenv").config();
 
 // Create a new client instance
 const client = new Client({
@@ -18,6 +18,10 @@ const client = new Client({
     GatewayIntentBits.MessageContent,
   ],
 });
+
+let token = process.env.DISCORD_TOKEN;
+let channelID = process.env.CHANNEL_ID;
+let sayUser = process.env.SAY_USER;
 
 let timeout;
 
@@ -133,7 +137,7 @@ async function createAudioFromText(text, userNickname) {
 }
 
 function formatText(text, userNickname) {
-  return sayUser == "true" ? `${userNickname} säger: ${text}` : text;
+  return sayUser == "TRUE" ? `${userNickname} säger: ${text}` : text;
 }
 
 function bufferToStream(buffer) {

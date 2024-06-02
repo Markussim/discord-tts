@@ -28,17 +28,15 @@ npm install
 
 ### 3. Set up configuration ⚙️
 
-Create a `config.json` file in the root directory of the project with the following content:
+Create a `.env` file in the root directory of the project with the following content:
 
-```json
-{
-  "token": "YOUR_DISCORD_BOT_TOKEN",
-  "channelID": "YOUR_VOICE_CHANNEL_ID",
-  "sayUser": "true_or_false"
-}
+```env
+DISCORD_TOKEN=YOUR_DISCORD_BOT_TOKEN
+CHANNEL_ID=YOUR_VOICE_CHANNEL_ID
+SAY_USER=TRUE_OR_FALSE
 ```
 
-Replace `YOUR_DISCORD_BOT_TOKEN` with your bot token and `YOUR_VOICE_CHANNEL_ID` with the ID of the voice channel you want the bot to join. Set `sayUser` to `true` if you want the bot to mention the user's name before the message, or `false` otherwise.
+Replace `YOUR_DISCORD_BOT_TOKEN` with your bot token and `YOUR_VOICE_CHANNEL_ID` with the ID of the voice channel you want the bot to join. Set `SAY_USER` to `TRUE` if you want the bot to mention the user's name before the message, or `FALSE` otherwise.
 
 ## 🚀 Usage
 
