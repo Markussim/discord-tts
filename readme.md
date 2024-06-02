@@ -1,0 +1,59 @@
+# 🗣️ Discord TTS Bot
+
+This project is a Discord bot that uses Google Cloud's Text-to-Speech API to convert messages into speech and play them in a voice channel. 🎤
+
+## 📚 Features
+
+- Converts text messages to speech using Google Cloud TTS.
+- Joins a specified voice channel and plays the converted speech.
+- Ignores messages from users who are already in the voice channel and unmuted.
+- Disconnects from the voice channel after 5 minutes of inactivity. ⏲️
+
+## 🛠️ How to set up
+
+### 1. Clone the repository 📦
+
+```sh
+git clone https://github.com/yourusername/discord-tts-bot.git
+cd discord-tts-bot
+```
+
+### 2. Install dependencies 📥
+
+Make sure you have Node.js installed, then run:
+
+```sh
+npm install
+```
+
+### 3. Set up configuration ⚙️
+
+Create a `config.json` file in the root directory of the project with the following content:
+
+```json
+{
+  "token": "YOUR_DISCORD_BOT_TOKEN",
+  "channelID": "YOUR_VOICE_CHANNEL_ID",
+  "sayUser": "true_or_false"
+}
+```
+
+Replace `YOUR_DISCORD_BOT_TOKEN` with your bot token and `YOUR_VOICE_CHANNEL_ID` with the ID of the voice channel you want the bot to join. Set `sayUser` to `true` if you want the bot to mention the user's name before the message, or `false` otherwise.
+
+## 🚀 Usage
+
+Start the bot by running:
+
+```sh
+node index.js
+```
+
+Your bot should now be online and ready to convert text messages into speech! 🎉
+
+## 📄 License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
+---
+
+Enjoy your new text-to-speech Discord bot! 🎧
