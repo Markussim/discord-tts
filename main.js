@@ -5,8 +5,7 @@ const {
   createAudioResource,
   createAudioPlayer,
 } = require("@discordjs/voice");
-const { token, channelID } = require("./config.json");
-const fs = require("fs");
+const { token, channelID, sayUser } = require("./config.json");
 const { Readable } = require("stream");
 const textToSpeech = require("@google-cloud/text-to-speech");
 
@@ -22,15 +21,17 @@ const client = new Client({
 
 let timeout;
 
+let player = createAudioPlayer();
+
 // Play each message received
 client.on(Events.MessageCreate, async (message) => {
+  console.log(`Received message: ${message.content}`);
+
   try {
     // Ignore messages from the bot itself
     if (message.author.bot) {
       return;
     }
-
-    console.log(channelID);
 
     const channel = message.guild.channels.cache.get(channelID);
 
@@ -39,10 +40,14 @@ client.on(Events.MessageCreate, async (message) => {
       return;
     }
 
+    // Check if voice channel is empty
+    if (channel.members.size == 0) {
+      console.log("Channel is empty.");
+      return;
+    }
+
     // Check if user is in voice channel
     const member = message.guild.members.cache.get(message.author.id);
-
-    console.log(`User: ${member.voice.channel}`);
 
     // If user is in the voice channel, ignore the message
     if (
@@ -55,6 +60,8 @@ client.on(Events.MessageCreate, async (message) => {
         return;
       }
     }
+
+    const userNickname = message.member.nickname || message.author.username;
 
     const messageContentWithoutMention = message.content.replace(
       /<@&?\d+>/g,
@@ -74,9 +81,8 @@ client.on(Events.MessageCreate, async (message) => {
       return;
     }
 
-    const player = createAudioPlayer();
     const resource = createAudioResource(
-      await createAudioFromText(messageContentWithoutMention)
+      await createAudioFromText(messageContentWithoutMention, userNickname)
     );
 
     player.play(resource);
@@ -97,18 +103,14 @@ client.on(Events.MessageCreate, async (message) => {
   }
 });
 
-// listen for all messages
-client.on(Events.MessageCreate, (message) => {
-  console.log(`Received message: ${message.content}`);
-});
-
 // Creates a client
 const google_client = new textToSpeech.TextToSpeechClient();
 
-async function createAudioFromText(text) {
+async function createAudioFromText(text, userNickname) {
+  console.time("createAudioFromText");
   // Generate the audio
   const request = {
-    input: { text: text },
+    input: { text: formatText(text, userNickname) },
     // Select the language and SSML voice gender (optional)
     voice: { languageCode: "en-US", ssmlGender: "NEUTRAL" },
     // select the type of audio encoding
@@ -124,8 +126,14 @@ async function createAudioFromText(text) {
   // Performs the text-to-speech request
   const [response] = await google_client.synthesizeSpeech(request);
 
+  console.timeEnd("createAudioFromText");
+
   // Return the audio as a buffer
   return bufferToStream(response.audioContent);
+}
+
+function formatText(text, userNickname) {
+  return sayUser == "true" ? `${userNickname} säger: ${text}` : text;
 }
 
 function bufferToStream(buffer) {
