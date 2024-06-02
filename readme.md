@@ -38,6 +38,14 @@ SAY_USER=TRUE_OR_FALSE
 
 Replace `YOUR_DISCORD_BOT_TOKEN` with your bot token and `YOUR_VOICE_CHANNEL_ID` with the ID of the voice channel you want the bot to join. Set `SAY_USER` to `TRUE` if you want the bot to mention the user's name before the message, or `FALSE` otherwise.
 
+You also need to link a google cloud service account key to the project. You can do this by using the -v flag to mount the key file into the container.
+
+```sh
+-v /path/to/key.json:/etc/service-account-key.json
+```
+
+Note that the right side of the colon should be `/etc/service-account-key.json` as that is the path the code is looking for the key file, and the left needs to be an absolute path to the key file on your local machine.
+
 ## 🚀 Usage
 
 Start the bot by running:
