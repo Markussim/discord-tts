@@ -29,8 +29,6 @@ let player = createAudioPlayer();
 
 // Play each message received
 client.on(Events.MessageCreate, async (message) => {
-  console.log(`Received message: ${message.content}`);
-
   try {
     // Ignore messages from the bot itself
     if (message.author.bot) {
@@ -43,6 +41,8 @@ client.on(Events.MessageCreate, async (message) => {
       console.error(`Channel with ID ${channelID} not found.`);
       return;
     }
+
+    console.log(`Received message: ${message.content}`);
 
     // Check if voice channel is empty
     if (channel.members.size == 0) {
@@ -65,12 +65,15 @@ client.on(Events.MessageCreate, async (message) => {
       }
     }
 
-    const userNickname = message.member.nickname || message.author.username;
+    const userNickname = message.member.nickname;
 
-    const messageContentWithoutMention = message.content.replace(
-      /<@&?\d+>/g,
-      ""
-    );
+    let messageContentWithoutMention = message.content.replace(/<@&?\d+>/g, "");
+
+    // Replace urls with "URL för <url>"
+    messageContentWithoutMention = replaceUrls(messageContentWithoutMention);
+
+    // Replace mentions with nicknames
+    messageContentWithoutMention = replaceMentions(message);
 
     // Join the voice channel
     const connection = joinVoiceChannel({
@@ -145,6 +148,43 @@ function bufferToStream(buffer) {
   stream.push(buffer);
   stream.push(null);
   return stream;
+}
+
+function replaceUrls(inputString) {
+  // Regular expression to match URLs
+  const urlRegex =
+    /(https?:\/\/)?(www\.)?([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(\/[^\s]*)?/g;
+
+  // Replace URLs with the desired format
+  const replacedString = inputString.replace(urlRegex, (match, p1, p2, p3) => {
+    return `URL för ${p3}`;
+  });
+
+  return replacedString;
+}
+
+function replaceMentions(message) {
+  // Receive nickname of the user of the user mentioned
+  const mentionedUser = message.mentions.users;
+
+  // Create map of mentioned id and nickname
+  const mentionedMap = new Map();
+
+  mentionedUser.forEach((user) => {
+    mentionedMap.set(user.id, user.displayName);
+  });
+
+  let messageContent = message.content;
+
+  // Replace mentions with nicknames
+  mentionedMap.forEach((value, key) => {
+    messageContent = messageContent.replace(
+      new RegExp(`<@!?${key}>`, "g"),
+      "@" + value
+    );
+  });
+
+  return messageContent;
 }
 
 // Log in to Discord with your client's token
