@@ -67,13 +67,11 @@ client.on(Events.MessageCreate, async (message) => {
 
     const userNickname = message.member.nickname;
 
-    let messageContentWithoutMention = message.content.replace(/<@&?\d+>/g, "");
+    // Replace mentions with nicknames
+    let messageContentWithoutMention = replaceMentions(message);
 
     // Replace urls with "URL för <url>"
     messageContentWithoutMention = replaceUrls(messageContentWithoutMention);
-
-    // Replace mentions with nicknames
-    messageContentWithoutMention = replaceMentions(message);
 
     // Join the voice channel
     const connection = joinVoiceChannel({
@@ -159,6 +157,8 @@ function replaceUrls(inputString) {
   const replacedString = inputString.replace(urlRegex, (match, p1, p2, p3) => {
     return `URL för ${p3}`;
   });
+
+  console.log(replacedString);
 
   return replacedString;
 }
