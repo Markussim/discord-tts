@@ -1,31 +1,7 @@
-// Require the necessary discord.js classes
-const { Client, Events, GatewayIntentBits } = require("discord.js");
-const {
-  joinVoiceChannel,
-  createAudioResource,
-  createAudioPlayer,
-} = require("@discordjs/voice");
-const { Readable } = require("stream");
-const textToSpeech = require("@google-cloud/text-to-speech");
-const dotenv = require("dotenv").config();
+const { Events } = require("discord.js");
 
-// Create a new client instance
-const client = new Client({
-  intents: [
-    GatewayIntentBits.Guilds,
-    GatewayIntentBits.GuildVoiceStates,
-    GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.MessageContent,
-  ],
-});
-
-let token = process.env.DISCORD_TOKEN;
-let channelID = process.env.CHANNEL_ID;
-let sayUser = process.env.SAY_USER;
-
-let timeout;
-
-let player = createAudioPlayer();
+const playMessage = require("./voice");
+const { client, channelID } = require("./client");
 
 // Play each message received
 client.on(Events.MessageCreate, async (message) => {
@@ -73,80 +49,17 @@ client.on(Events.MessageCreate, async (message) => {
     // Replace urls with "URL för <url>"
     messageContentWithoutMention = replaceUrls(messageContentWithoutMention);
 
-    // Join the voice channel
-    const connection = joinVoiceChannel({
-      channelId: channelID,
-      guildId: channel.guild.id,
-      adapterCreator: channel.guild.voiceAdapterCreator,
-    });
+    let messageObject = {
+      content: messageContentWithoutMention,
+      nickname: userNickname,
+    };
 
-    // Play the audio
-    if (!connection) {
-      console.error("The bot is not connected to a voice channel.");
-      return;
-    }
-
-    const resource = createAudioResource(
-      await createAudioFromText(messageContentWithoutMention, userNickname)
-    );
-
-    player.play(resource);
-
-    connection.subscribe(player);
-
-    // Set the last message time
-    lastMessageTime = Date.now();
-
-    // Set a timeout to disconnect the bot after 5 minutes of inactivity
-    clearTimeout(timeout);
-
-    timeout = setTimeout(() => {
-      connection.destroy();
-    }, 300000);
+    // Plays the message using the function from src/voice.js
+    playMessage(messageObject);
   } catch (error) {
     console.error(`Error: ${error.message}`);
   }
 });
-
-// Creates a client
-const google_client = new textToSpeech.TextToSpeechClient();
-
-async function createAudioFromText(text, userNickname) {
-  console.time("createAudioFromText");
-  // Generate the audio
-  const request = {
-    input: { text: formatText(text, userNickname) },
-    // Select the language and SSML voice gender (optional)
-    voice: { languageCode: "en-US", ssmlGender: "NEUTRAL" },
-    // select the type of audio encoding
-    audioConfig: { audioEncoding: "MP3" },
-
-    voice: {
-      languageCode: "sv-SE",
-      name: "sv-SE-Wavenet-C",
-      ssmlGender: "NEUTRAL",
-    },
-  };
-
-  // Performs the text-to-speech request
-  const [response] = await google_client.synthesizeSpeech(request);
-
-  console.timeEnd("createAudioFromText");
-
-  // Return the audio as a buffer
-  return bufferToStream(response.audioContent);
-}
-
-function formatText(text, userNickname) {
-  return sayUser == "TRUE" ? `${userNickname} säger: ${text}` : text;
-}
-
-function bufferToStream(buffer) {
-  const stream = new Readable();
-  stream.push(buffer);
-  stream.push(null);
-  return stream;
-}
 
 function replaceUrls(inputString) {
   // Regular expression to match URLs
@@ -186,6 +99,3 @@ function replaceMentions(message) {
 
   return messageContent;
 }
-
-// Log in to Discord with your client's token
-client.login(token);

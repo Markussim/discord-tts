@@ -2,10 +2,10 @@
   "name": "markus-ska-prata",
   "version": "1.0.0",
   "description": "",
-  "main": "main.js",
+  "main": "src/main.js",
   "scripts": {
-    "dev": "nodemon main.js",
-    "start": "node main.js"
+    "dev": "nodemon src/main.js",
+    "start": "node src/main.js"
   },
   "keywords": [],
   "author": "",
