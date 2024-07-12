@@ -1,7 +1,8 @@
 const { Events } = require("discord.js");
 
-const playMessage = require("./voice");
 const { client, channelID } = require("./client");
+const { enqueue } = require("./queue");
+const { test } = require("./voice");
 
 // Play each message received
 client.on(Events.MessageCreate, async (message) => {
@@ -18,7 +19,7 @@ client.on(Events.MessageCreate, async (message) => {
       return;
     }
 
-    console.log(`Received message: ${message.content}`);
+    console.log(`Message received: ${message.content}`);
 
     // Check if voice channel is empty
     if (channel.members.size == 0) {
@@ -54,8 +55,8 @@ client.on(Events.MessageCreate, async (message) => {
       nickname: userNickname,
     };
 
-    // Plays the message using the function from src/voice.js
-    playMessage(messageObject);
+    // Add message to the queue
+    enqueue(messageObject);
   } catch (error) {
     console.error(`Error: ${error.message}`);
   }
@@ -70,8 +71,6 @@ function replaceUrls(inputString) {
   const replacedString = inputString.replace(urlRegex, (match, p1, p2, p3) => {
     return `URL för ${p3}`;
   });
-
-  console.log(replacedString);
 
   return replacedString;
 }
