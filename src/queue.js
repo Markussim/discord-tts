@@ -4,6 +4,7 @@ function enqueue(message) {
   const messageObject = {
     content: message.content,
     nickname: message.nickname,
+    isImage: message.isImage,
     // Generate a unique ID for each message
     id: Math.random().toString(36).substr(2, 9),
   };

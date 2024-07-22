@@ -38,7 +38,11 @@ async function queueListener() {
 
 async function playMessage(messageObject) {
   // Destructure the message object
-  const { content: message, nickname: userNickname } = messageObject;
+  const {
+    content: message,
+    nickname: userNickname,
+    isImage: isImage,
+  } = messageObject;
   // Get the channel from its ID (Message is a string so we can't use message.guild.channels.cache.get)
   const channel = await client.channels.fetch(channelID);
   // Join the voice channel
@@ -54,7 +58,7 @@ async function playMessage(messageObject) {
   }
 
   // Create the audio and resource
-  const audio = await createAudioFromText(message, userNickname);
+  const audio = await createAudioFromText(message, userNickname, isImage);
   const resource = createAudioResource(audio);
 
   // Create a promise that will resolve when playback is complete
@@ -79,10 +83,10 @@ async function playMessage(messageObject) {
 // Creates a client
 const google_client = new textToSpeech.TextToSpeechClient();
 
-async function createAudioFromText(text, userNickname) {
+async function createAudioFromText(text, userNickname, isImage = false) {
   // Generate the audio
   const request = {
-    input: { text: formatText(text, userNickname) },
+    input: { text: formatText(text, userNickname, isImage) },
     // Select the language and SSML voice gender (optional)
     voice: { languageCode: "en-US", ssmlGender: "NEUTRAL" },
     // select the type of audio encoding
@@ -106,19 +110,31 @@ let lastUser = "";
 
 let lastMessageTime = Date.now();
 
-function formatText(text, userNickname) {
+function formatText(text, userNickname, isImage = false) {
   console.log(`Last user: ${lastUser}`);
 
   let oneMinute = 60000;
 
-  if (lastUser === userNickname && Date.now() - lastMessageTime < oneMinute) {
+  if (
+    lastUser === userNickname &&
+    Date.now() - lastMessageTime < oneMinute &&
+    !isImage
+  ) {
     return text;
   }
 
   lastUser = userNickname;
   lastMessageTime = Date.now();
 
-  return sayUser == "TRUE" ? `${userNickname} säger: ${text}` : text;
+  let formattedText = "";
+
+  if (isImage) {
+    formattedText = `Bild skickad av ${userNickname}: ${text}`;
+  } else {
+    formattedText = `${userNickname} säger: ${text}`;
+  }
+
+  return formattedText;
 }
 
 function bufferToStream(buffer) {

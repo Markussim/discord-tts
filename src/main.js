@@ -3,6 +3,12 @@ const { Events } = require("discord.js");
 const { client, channelID } = require("./client");
 const { enqueue } = require("./queue");
 const { test } = require("./voice");
+const axios = require("axios");
+const cheerio = require("cheerio");
+const OpenAI = require("openai");
+
+// Set up OpenAI API
+const openai = new OpenAI(process.env.OPENAI_API_KEY);
 
 // Play each message received
 client.on(Events.MessageCreate, async (message) => {
@@ -37,7 +43,7 @@ client.on(Events.MessageCreate, async (message) => {
       member.voice.channel.id == channelID
     ) {
       // Check if user is muted
-      if (!member.voice.mute) {
+      if (!member.voice.mute && false) {
         return;
       }
     }
@@ -48,11 +54,14 @@ client.on(Events.MessageCreate, async (message) => {
     let messageContentWithoutMention = replaceMentions(message);
 
     // Replace urls with "URL för <url>"
-    messageContentWithoutMention = replaceUrls(messageContentWithoutMention);
+    messageContentWithoutMention = await replaceUrls(
+      messageContentWithoutMention
+    );
 
     let messageObject = {
-      content: messageContentWithoutMention,
+      content: messageContentWithoutMention.text,
       nickname: userNickname,
+      isImage: messageContentWithoutMention.isImage,
     };
 
     // Add message to the queue
@@ -62,17 +71,35 @@ client.on(Events.MessageCreate, async (message) => {
   }
 });
 
-function replaceUrls(inputString) {
+async function replaceUrls(inputString) {
   // Regular expression to match URLs
   const urlRegex =
     /(https?:\/\/)?(www\.)?([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(\/[^\s]*)?/g;
 
-  // Replace URLs with the desired format
-  const replacedString = inputString.replace(urlRegex, (match, p1, p2, p3) => {
-    return `URL för ${p3}`;
+  let url = inputString.replace(urlRegex, (match, p1, p2, p3) => {
+    return p3;
   });
 
-  return replacedString;
+  // If url is for tenor, get full url
+  if (url.includes("tenor")) {
+    url = inputString.match(urlRegex)[0];
+
+    let description = await gifToDescription(url);
+
+    console.log(`Description: ${description}`);
+
+    return {
+      text: description,
+      isImage: true,
+    };
+  } else {
+    // Replace URLs with the desired format
+    const replacedString = inputString.replace(urlRegex, `URL för ${url}`);
+    return {
+      text: replacedString,
+      isImage: false,
+    };
+  }
 }
 
 function replaceMentions(message) {
@@ -97,4 +124,40 @@ function replaceMentions(message) {
   });
 
   return messageContent;
+}
+
+async function gifToDescription(url) {
+  const response = await axios.get(url);
+
+  // Get url for the gif in meta tag
+  const $ = cheerio.load(response.data);
+  const gifUrl = $("meta[property='og:image']").attr("content");
+
+  // Get description of the gif
+  let message = {
+    role: "user",
+    content: [
+      {
+        type: "text",
+        text: "Write a very short description for this image in swedish.",
+      },
+      {
+        type: "image_url",
+        image_url: {
+          url: gifUrl,
+        },
+      },
+    ],
+  };
+
+  const completion = await openai.chat.completions.create({
+    model: "gpt-4o-mini",
+    messages: [message],
+  });
+
+  let text = completion.choices[0].message.content;
+
+  console.log(text);
+
+  return text;
 }
