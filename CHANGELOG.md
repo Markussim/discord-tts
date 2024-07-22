@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.0.4] - 2024-07-22
+
+### Added
+
+- Added ai description of gifs
+
+- Added human readable role mentions
+
 ## [0.0.3] - 2024-07-12
 
 ### Added

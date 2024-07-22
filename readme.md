@@ -34,6 +34,7 @@ Create a `.env` file in the root directory of the project with the following con
 DISCORD_TOKEN=YOUR_DISCORD_BOT_TOKEN
 CHANNEL_ID=YOUR_VOICE_CHANNEL_ID
 SAY_USER=TRUE_OR_FALSE
+OPENAI_API_KEY=YOUR_OPENAI_API_KEY
 ```
 
 Replace `YOUR_DISCORD_BOT_TOKEN` with your bot token and `YOUR_VOICE_CHANNEL_ID` with the ID of the voice channel you want the bot to join. Set `SAY_USER` to `TRUE` if you want the bot to mention the user's name before the message, or `FALSE` otherwise.
