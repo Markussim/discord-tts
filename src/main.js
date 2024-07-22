@@ -43,7 +43,7 @@ client.on(Events.MessageCreate, async (message) => {
       member.voice.channel.id == channelID
     ) {
       // Check if user is muted
-      if (!member.voice.mute && false) {
+      if (!member.voice.mute) {
         return;
       }
     }
@@ -106,11 +106,20 @@ function replaceMentions(message) {
   // Receive nickname of the user of the user mentioned
   const mentionedUser = message.mentions.users;
 
+  const mentionedRole = message.mentions.roles;
+
   // Create map of mentioned id and nickname
   const mentionedMap = new Map();
 
+  // Create map of mentioned id and role name
+  const mentionedRoleMap = new Map();
+
   mentionedUser.forEach((user) => {
     mentionedMap.set(user.id, user.displayName);
+  });
+
+  mentionedRole.forEach((role) => {
+    mentionedRoleMap.set(role.id, role.name);
   });
 
   let messageContent = message.content;
@@ -119,6 +128,14 @@ function replaceMentions(message) {
   mentionedMap.forEach((value, key) => {
     messageContent = messageContent.replace(
       new RegExp(`<@!?${key}>`, "g"),
+      "@" + value
+    );
+  });
+
+  // Replace mentions with role names
+  mentionedRoleMap.forEach((value, key) => {
+    messageContent = messageContent.replace(
+      new RegExp(`<@&${key}>`, "g"),
       "@" + value
     );
   });
