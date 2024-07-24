@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.0.5] - 2024-07-24
+
+### Added
+
+- Image descriptions for attachments
+
 ## [0.0.4] - 2024-07-22
 
 ### Added
