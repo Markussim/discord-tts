@@ -27,6 +27,17 @@ client.on(Events.MessageCreate, async (message) => {
 
     console.log(`Message received: ${message.content}`);
 
+    const messageAttachmentsCollection = message.attachments;
+
+    let messageAttachments = messageAttachmentsCollection.map((attachment) => {
+      return attachment.url;
+    });
+
+    // Filter out attachments that are not images
+    messageAttachments = messageAttachments.filter((attachment) =>
+      attachment.match(/\.(jpeg|jpg|gif|png)(\?.*)?$/i)
+    );
+
     // Check if voice channel is empty
     if (channel.members.size == 0) {
       console.log("Channel is empty.");
@@ -55,7 +66,8 @@ client.on(Events.MessageCreate, async (message) => {
 
     // Replace urls with "URL för <url>"
     messageContentWithoutMention = await replaceUrls(
-      messageContentWithoutMention
+      messageContentWithoutMention,
+      messageAttachments
     );
 
     let messageObject = {
@@ -71,7 +83,7 @@ client.on(Events.MessageCreate, async (message) => {
   }
 });
 
-async function replaceUrls(inputString) {
+async function replaceUrls(inputString, attachments) {
   // Regular expression to match URLs
   const urlRegex =
     /(https?:\/\/)?(www\.)?([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(\/[^\s]*)?/g;
@@ -87,6 +99,14 @@ async function replaceUrls(inputString) {
     let description = await gifToDescription(url);
 
     console.log(`Description: ${description}`);
+
+    return {
+      text: description,
+      isImage: true,
+    };
+  } else if (attachments.length > 0) {
+    // If there are attachments, return a description
+    let description = await urlToDescription(attachments[0]);
 
     return {
       text: description,
@@ -150,6 +170,12 @@ async function gifToDescription(url) {
   const $ = cheerio.load(response.data);
   const gifUrl = $("meta[property='og:image']").attr("content");
 
+  let description = await urlToDescription(gifUrl);
+
+  return description;
+}
+
+async function urlToDescription(url) {
   // Get description of the gif
   let message = {
     role: "user",
@@ -161,7 +187,7 @@ async function gifToDescription(url) {
       {
         type: "image_url",
         image_url: {
-          url: gifUrl,
+          url: url,
         },
       },
     ],
@@ -173,8 +199,6 @@ async function gifToDescription(url) {
   });
 
   let text = completion.choices[0].message.content;
-
-  console.log(text);
 
   return text;
 }
