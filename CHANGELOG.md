@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.0.7] - 2024-07-25
+
+### Added
+
+- Fixed crash on kick
+
 ## [0.0.5] - 2024-07-24
 
 ### Added
