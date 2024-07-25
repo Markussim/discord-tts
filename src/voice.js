@@ -68,6 +68,18 @@ async function playMessage(messageObject) {
       resolve();
     });
 
+    // On kick, destroy the connection
+    connection.on("stateChange", async (_, newState) => {
+      resolve();
+    });
+
+    // On error, destroy the connection
+    player.on("error", async (error) => {
+      console.error(`Error: ${error.message}`);
+      connection.destroy();
+      resolve();
+    });
+
     // Start the playback
     player.play(resource);
     connection.subscribe(player);
