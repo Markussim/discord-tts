@@ -70,7 +70,9 @@ async function playMessage(messageObject) {
 
     // On kick, destroy the connection
     connection.on("stateChange", async (_, newState) => {
-      resolve();
+      if (newState.status === "disconnected") {
+        resolve();
+      }
     });
 
     // On error, destroy the connection
