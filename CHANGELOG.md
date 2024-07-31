@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.0.8] - 2024-07-31
+
+### Fixed
+
+- Fixed queue skipping on new message
+
 ## [0.0.7] - 2024-07-25
 
 ### Added
