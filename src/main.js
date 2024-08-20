@@ -53,8 +53,11 @@ client.on(Events.MessageCreate, async (message) => {
       member.voice.channel &&
       member.voice.channel.id == channelID
     ) {
+      console.log(process.env.DEV);
+
       // Check if user is muted
-      if (!member.voice.mute) {
+      if (process.env.DEV != "TRUE" && !member.voice.mute) {
+        console.log("Ignoring message from user in voice channel.");
         return;
       }
     }
