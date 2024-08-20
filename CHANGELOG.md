@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.0.9] - 2024-08-20
+
+### Added
+
+- AI for describing websites
+
 ## [0.0.8] - 2024-07-31
 
 ### Fixed
