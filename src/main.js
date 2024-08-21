@@ -65,11 +65,16 @@ client.on(Events.MessageCreate, async (message) => {
     // Replace mentions with nicknames
     let messageContentWithoutMention = replaceMentions(message);
 
-    // Replace urls with "URL för <url>"
-    messageContentWithoutMention = await replaceUrls(
-      messageContentWithoutMention,
-      messageAttachments
-    );
+    // Replace misc mention like things
+    messageContentWithoutMention = replaceMisc(message, client);
+
+    // Replace misc mention like things
+    messageContentWithoutMention =
+      // Replace urls with "URL för <url>"
+      messageContentWithoutMention = await replaceUrls(
+        messageContentWithoutMention,
+        messageAttachments
+      );
 
     let messageObject = {
       content: messageContentWithoutMention.text,
@@ -170,6 +175,28 @@ function replaceMentions(message) {
       new RegExp(`<@&${key}>`, "g"),
       "@" + value
     );
+  });
+
+  return messageContent;
+}
+
+function replaceMisc(message, client) {
+  let messageContent = message.content;
+  // Replace channel mentions with channel names
+  const channelMentions = messageContent.match(/<#(.*?)>/g) ?? [];
+
+  channelMentions.forEach((channel) => {
+    const channelId = channel.replace(/<#|>/g, "");
+    const channelName = client.channels.cache.get(channelId).name;
+    messageContent = messageContent.replace(channel, "hashtag " + channelName);
+  });
+
+  // Replace custom emoji with emoji name
+  const emojis = messageContent.match(/<:(.*?):(.*?)>/g) ?? [];
+
+  emojis.forEach((emoji) => {
+    const emojiName = emoji.split(":")[1];
+    messageContent = messageContent.replace(emoji, ":" + emojiName + ":");
   });
 
   return messageContent;
