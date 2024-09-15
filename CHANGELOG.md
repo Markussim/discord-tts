@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.0.0] - 2024-09-15
+
+### Added
+
+- Fixed enough bugs to call it 1.0.0
+
 ## [0.0.9] - 2024-08-20
 
 ### Added
