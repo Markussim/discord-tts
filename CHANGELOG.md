@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.0.1] - 2024-10-13
+
+### Fixed
+
+- Fixed mention bug introduced in 1.0.0
+
 ## [1.0.0] - 2024-09-15
 
 ### Added
