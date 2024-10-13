@@ -66,15 +66,18 @@ client.on(Events.MessageCreate, async (message) => {
     let messageContentWithoutMention = replaceMentions(message);
 
     // Replace misc mention like things
-    messageContentWithoutMention = replaceMisc(message, client);
+    messageContentWithoutMention = replaceMisc(
+      messageContentWithoutMention,
+      client
+    );
+
+    console.log(messageContentWithoutMention);
 
     // Replace misc mention like things
-    messageContentWithoutMention =
-      // Replace urls with "URL för <url>"
-      messageContentWithoutMention = await replaceUrls(
-        messageContentWithoutMention,
-        messageAttachments
-      );
+    messageContentWithoutMention = await replaceUrls(
+      messageContentWithoutMention,
+      messageAttachments
+    );
 
     let messageObject = {
       content: messageContentWithoutMention.text,
@@ -181,7 +184,7 @@ function replaceMentions(message) {
 }
 
 function replaceMisc(message, client) {
-  let messageContent = message.content;
+  let messageContent = message;
   // Replace channel mentions with channel names
   const channelMentions = messageContent.match(/<#(.*?)>/g) ?? [];
 
