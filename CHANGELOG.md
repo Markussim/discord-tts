@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.1.0]
+
+### Added
+
+- Added personalized voices
+
 ## [1.0.1] - 2024-10-13
 
 ### Fixed

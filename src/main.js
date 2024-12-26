@@ -83,6 +83,7 @@ client.on(Events.MessageCreate, async (message) => {
       content: messageContentWithoutMention.text,
       nickname: userNickname,
       isImage: messageContentWithoutMention.isImage,
+      userId: message.author.id,
     };
 
     // Add message to the queue

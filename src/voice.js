@@ -42,6 +42,7 @@ async function playMessage(messageObject) {
     content: message,
     nickname: userNickname,
     isImage: isImage,
+    userId: userId,
   } = messageObject;
   // Get the channel from its ID (Message is a string so we can't use message.guild.channels.cache.get)
   const channel = await client.channels.fetch(channelID);
@@ -58,7 +59,13 @@ async function playMessage(messageObject) {
   }
 
   // Create the audio and resource
-  const audio = await createAudioFromText(message, userNickname, isImage);
+  const audio = await createAudioFromText(
+    message,
+    userNickname,
+    isImage,
+    messageObject.userId
+  );
+
   const resource = createAudioResource(audio);
 
   // Create a promise that will resolve when playback is complete
@@ -97,7 +104,21 @@ async function playMessage(messageObject) {
 // Creates a client
 const google_client = new textToSpeech.TextToSpeechClient();
 
-async function createAudioFromText(text, userNickname, isImage = false) {
+const voices = require("../voices.json");
+
+async function createAudioFromText(
+  text,
+  userNickname,
+  isImage = false,
+  userId
+) {
+  let voiceName = voices[userId];
+
+  if (!voiceName) {
+    console.error("Voice not found");
+    voiceName = "sv-SE-Wavenet-C";
+  }
+
   // Generate the audio
   const request = {
     input: { text: formatText(text, userNickname, isImage) },
@@ -108,7 +129,7 @@ async function createAudioFromText(text, userNickname, isImage = false) {
 
     voice: {
       languageCode: "sv-SE",
-      name: "sv-SE-Wavenet-C",
+      name: voiceName,
       ssmlGender: "NEUTRAL",
     },
   };
