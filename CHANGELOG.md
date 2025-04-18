@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.2.0]
+
+### Added
+
+- Added roast
+
+### Fixed
+
+- Bumped many packages
+
 ## [1.1.0]
 
 ### Added
