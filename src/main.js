@@ -219,13 +219,23 @@ async function gifToDescription(url) {
 }
 
 async function urlToDescription(url) {
+  // Variable that is true 1 of 5 times
+  const isTrue = Math.floor(Math.random() * 5) === 0;
+
+  let prompt =
+    "Write a 1 sentence description for this image in swedish. Translate all text into swedish. You don't have to read all text, and you should not mention that it is a translation.";
+
+  if (isTrue) {
+    prompt += " Make sure to mention why the image is very bad.";
+  }
+
   // Get description of the gif
   let message = {
     role: "user",
     content: [
       {
         type: "text",
-        text: "Write a very short description for this image in swedish.",
+        text: prompt,
       },
       {
         type: "image_url",
@@ -237,7 +247,7 @@ async function urlToDescription(url) {
   };
 
   const completion = await openai.chat.completions.create({
-    model: "gpt-4o-mini",
+    model: "o4-mini",
     messages: [message],
   });
 
