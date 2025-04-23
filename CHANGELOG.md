@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.2.1]
+
+### Fixed
+
+- Adjusted roast prompt
+
 ## [1.2.0]
 
 ### Added
