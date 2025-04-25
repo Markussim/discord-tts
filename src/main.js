@@ -225,7 +225,7 @@ async function urlToDescription(url) {
   let prompt =
     "Write a 1 sentence description for this image in swedish. Translate all text into swedish. You don't have to read all text, and you should not mention that it is a translation.";
 
-  if (isTrue || true) {
+  if (isTrue) {
     prompt += " Make sure to mention why the image is very bad in a funny way.";
   }
 

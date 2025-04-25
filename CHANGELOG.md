@@ -4,6 +4,12 @@
 
 ### Fixed
 
+- Fixed always roasting
+
+## [1.2.1]
+
+### Fixed
+
 - Adjusted roast prompt
 
 ## [1.2.0]
