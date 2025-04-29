@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.2.3]
+
+### Fixed
+
+- Fixed version number
+
 ## [1.2.2]
 
 ### Fixed
