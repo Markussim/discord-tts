@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.3.0]
+
+### Added
+
+- Added multi language support
+
 ## [1.2.3]
 
 ### Fixed

@@ -5,6 +5,7 @@ const {
   AudioPlayerStatus,
 } = require("@discordjs/voice");
 const textToSpeech = require("@google-cloud/text-to-speech");
+const { Translate } = require("@google-cloud/translate").v2;
 const { Readable } = require("stream");
 
 // Import client from src/main.js
@@ -104,6 +105,8 @@ async function playMessage(messageObject) {
 // Creates a client
 const google_client = new textToSpeech.TextToSpeechClient();
 
+const translate = new Translate();
+
 const voices = require("../voices.json");
 
 async function createAudioFromText(
@@ -114,21 +117,44 @@ async function createAudioFromText(
 ) {
   let voiceName = voices[userId];
 
+  let language = "sv-SE";
+
+  // Detect language of "text"
+  const [detection] = await translate.detect(text);
+  console.log(`Detected language: ${detection.language}`);
+
+  if (detection.language === "sv") {
+    language = "sv-SE";
+  } else if (detection.language === "en") {
+    language = "en-GB";
+  } else {
+    language = "en-GB";
+  }
+
   if (!voiceName) {
     console.error("Voice not found");
     voiceName = "sv-SE-Wavenet-C";
   }
 
+  if (language === "en-GB") {
+    voiceName = "en-GB-Chirp3-HD-Achernar";
+  }
+
+  if (!language) {
+    console.error("Language not found");
+    language = "sv-SE";
+  }
+
   // Generate the audio
   const request = {
-    input: { text: formatText(text, userNickname, isImage) },
+    input: { text: formatText(text, userNickname, isImage, language) },
     // Select the language and SSML voice gender (optional)
     voice: { languageCode: "en-US", ssmlGender: "NEUTRAL" },
     // select the type of audio encoding
     audioConfig: { audioEncoding: "MP3" },
 
     voice: {
-      languageCode: "sv-SE",
+      languageCode: language,
       name: voiceName,
       ssmlGender: "NEUTRAL",
     },
@@ -145,7 +171,7 @@ let lastUser = "";
 
 let lastMessageTime = Date.now();
 
-function formatText(text, userNickname, isImage = false) {
+function formatText(text, userNickname, isImage = false, language) {
   console.log(`Last user: ${lastUser}`);
 
   let oneMinute = 60000;
@@ -163,10 +189,18 @@ function formatText(text, userNickname, isImage = false) {
 
   let formattedText = "";
 
-  if (isImage) {
-    formattedText = `Bild skickad av ${userNickname}: ${text}`;
+  if (language === "sv-SE") {
+    if (isImage) {
+      formattedText = `Bild skickad av ${userNickname}: ${text}`;
+    } else {
+      formattedText = `${userNickname} säger: ${text}`;
+    }
   } else {
-    formattedText = `${userNickname} säger: ${text}`;
+    if (isImage) {
+      formattedText = `Image sent by ${userNickname}: ${text}`;
+    } else {
+      formattedText = `${userNickname} says: ${text}`;
+    }
   }
 
   return formattedText;
