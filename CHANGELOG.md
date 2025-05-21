@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.3.1]
+
+### Fixed
+
+- Some text treated as URL and broke TTS
+
+### Updated
+
+- Updated prompt
+
 ## [1.3.0]
 
 ### Added
