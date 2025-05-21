@@ -257,61 +257,65 @@ async function urlToDescription(url) {
 }
 
 async function htmlToDescription(url) {
-  const response = await axios.get(url);
+  try {
+    const response = await axios.get(url);
 
-  const $ = cheerio.load(response.data);
+    const $ = cheerio.load(response.data);
 
-  let metaTagsArray = [];
+    let metaTagsArray = [];
 
-  if ($("meta[name='description']").attr("content")) {
-    metaTagsArray.push($("meta[name='description']").attr("content"));
+    if ($("meta[name='description']").attr("content")) {
+      metaTagsArray.push($("meta[name='description']").attr("content"));
+    }
+
+    if ($("meta[property='og:description']").attr("content")) {
+      metaTagsArray.push($("meta[property='og:description']").attr("content"));
+    }
+
+    if ($("meta[name='twitter:description']").attr("content")) {
+      metaTagsArray.push($("meta[name='twitter:description']").attr("content"));
+    }
+
+    if ($("title").text()) {
+      metaTagsArray.push($("title").text());
+    }
+
+    let description = metaTagsArray.join(" | ");
+
+    console.log(`Description: ${description}`);
+
+    // Cut raw text to 1000 characters
+    rawText = description.substring(0, 1000);
+
+    const systemMessage = {
+      role: "system",
+      content: [
+        {
+          type: "text",
+          text: "What is this website? Write a 10 word description in swedish. Please start with 'URL för'.",
+        },
+      ],
+    };
+
+    const message = {
+      role: "user",
+      content: [
+        {
+          type: "text",
+          text: rawText,
+        },
+      ],
+    };
+
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [systemMessage, message],
+    });
+
+    let text = completion.choices[0].message.content;
+
+    return text;
+  } catch (error) {
+    return url;
   }
-
-  if ($("meta[property='og:description']").attr("content")) {
-    metaTagsArray.push($("meta[property='og:description']").attr("content"));
-  }
-
-  if ($("meta[name='twitter:description']").attr("content")) {
-    metaTagsArray.push($("meta[name='twitter:description']").attr("content"));
-  }
-
-  if ($("title").text()) {
-    metaTagsArray.push($("title").text());
-  }
-
-  let description = metaTagsArray.join(" | ");
-
-  console.log(`Description: ${description}`);
-
-  // Cut raw text to 1000 characters
-  rawText = description.substring(0, 1000);
-
-  const systemMessage = {
-    role: "system",
-    content: [
-      {
-        type: "text",
-        text: "What is this website? Write a 10 word description in swedish. Please start with 'URL för'.",
-      },
-    ],
-  };
-
-  const message = {
-    role: "user",
-    content: [
-      {
-        type: "text",
-        text: rawText,
-      },
-    ],
-  };
-
-  const completion = await openai.chat.completions.create({
-    model: "gpt-4o-mini",
-    messages: [systemMessage, message],
-  });
-
-  let text = completion.choices[0].message.content;
-
-  return text;
 }

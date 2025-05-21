@@ -119,13 +119,23 @@ async function createAudioFromText(
 
   let language = "sv-SE";
 
-  // Detect language of "text"
-  const [detection] = await translate.detect(text);
-  console.log(`Detected language: ${detection.language}`);
+  let detectedLanguage;
 
-  if (detection.language === "sv") {
+  if (text.length < 20) {
+    // Set language to "sv" if the text is less than 10 characters
+    detectedLanguage = "sv";
+    console.log(`message is less than 20 characters`);
+  } else if (text.length > 5) {
+    // Detect language of "text"
+    const [detection] = await translate.detect(text);
+    console.log(`Detected language: ${detection.language}`);
+
+    detectedLanguage = detection.language;
+  }
+
+  if (detectedLanguage === "sv") {
     language = "sv-SE";
-  } else if (detection.language === "en") {
+  } else if (detectedLanguage === "en") {
     language = "en-GB";
   } else {
     language = "en-GB";
