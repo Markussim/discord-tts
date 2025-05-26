@@ -220,13 +220,15 @@ async function gifToDescription(url) {
 
 async function urlToDescription(url) {
   // Variable that is true 1 of 5 times
-  const isTrue = Math.floor(Math.random() * 5) === 0 || true;
+  const shouldRoast =
+    Math.floor(Math.random() * 5) === 0 ||
+    process.env.ALWAYS_ROAST?.toLowerCase() === "true";
 
   let prompt = `Write a ${
-    isTrue ? "funny" : "serious 1 sentence"
+    shouldRoast ? "funny" : "serious 1 sentence"
   } description for this image in swedish. Translate all text into swedish. You don't have to read all text, and you should not mention that it is a translation. If it is a screenshot, only mention the most important parts.`;
 
-  if (isTrue) {
+  if (shouldRoast) {
     prompt += " Make sure to mention why the image is very bad in a funny way.";
   }
 

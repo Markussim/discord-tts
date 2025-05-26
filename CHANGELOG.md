@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.3.2]
+
+### Fixed
+
+- Added "ALWAYS_ROAST"
+
 ## [1.3.1]
 
 ### Fixed
