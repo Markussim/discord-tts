@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.3.3]
+
+### Fixed
+
+- Much shorter roast length
+
 ## [1.3.2]
 
 ### Fixed
