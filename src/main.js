@@ -225,11 +225,14 @@ async function urlToDescription(url) {
     process.env.ALWAYS_ROAST?.toLowerCase() === "true";
 
   let prompt = `Write a ${
-    shouldRoast ? "funny" : "serious 1 sentence"
-  } description for this image in swedish. Translate all text into swedish. You don't have to read all text, and you should not mention that it is a translation. If it is a screenshot, only mention the most important parts.`;
+    shouldRoast ? "funny 2 sentence" : "serious 1 sentence"
+  } description for this image in swedish. Translate all text into swedish. You don't have to read all text, and you should not mention that it is a translation. If it is a screenshot, only mention the most important parts.
+  If the image looked looks like google street view, try to guess where in the world it is. Do this in detail.
+  `;
 
   if (shouldRoast) {
-    prompt += " Make sure to mention why the image is very bad in a funny way.";
+    prompt +=
+      " Make sure to mention why the content of the image is very bad in a funny way.";
   }
 
   // Get description of the gif
@@ -250,7 +253,7 @@ async function urlToDescription(url) {
   };
 
   const completion = await openai.chat.completions.create({
-    model: "o4-mini",
+    model: "o3",
     messages: [message],
   });
 
