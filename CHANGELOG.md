@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.3.4]
+
+### Fixed
+
+- Fixed text generating in list format
+
 ## [1.3.3]
 
 ### Fixed

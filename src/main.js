@@ -227,7 +227,7 @@ async function urlToDescription(url) {
   let prompt = `Write a ${
     shouldRoast ? "funny 2 sentence" : "serious 1 sentence"
   } description for this image in swedish. Translate all text into swedish. You don't have to read all text, and you should not mention that it is a translation. If it is a screenshot, only mention the most important parts.
-  If the image looked looks like google street view, try to guess where in the world it is. Do this in detail.
+  If the image looked looks like google street view, try to guess where in the world it is. Do this in detail. It must be in a running text format.
   `;
 
   if (shouldRoast) {
