@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.4.0]
+
+### Added
+
+- Added support for multi image messages
+
 ## [1.3.4]
 
 ### Fixed

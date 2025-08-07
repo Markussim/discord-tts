@@ -106,7 +106,7 @@ async function replaceUrls(inputString, attachments) {
   if (url.includes("tenor")) {
     url = inputString.match(urlRegex)[0];
 
-    let description = await gifToDescription(url);
+    let description = await gifToDescription([url]);
 
     console.log(`Description: ${description}`);
 
@@ -116,7 +116,7 @@ async function replaceUrls(inputString, attachments) {
     };
   } else if (attachments.length > 0) {
     // If there are attachments, return a description
-    let description = await urlToDescription(attachments[0]);
+    let description = await urlToDescription(attachments.slice(0, 5));
 
     return {
       text: description,
@@ -218,7 +218,7 @@ async function gifToDescription(url) {
   return description;
 }
 
-async function urlToDescription(url) {
+async function urlToDescription(urls) {
   // Variable that is true 1 of 5 times
   const shouldRoast =
     Math.floor(Math.random() * 5) === 0 ||
@@ -226,8 +226,8 @@ async function urlToDescription(url) {
 
   let prompt = `Write a ${
     shouldRoast ? "funny 2 sentence" : "serious 1 sentence"
-  } description for this image in swedish. Translate all text into swedish. You don't have to read all text, and you should not mention that it is a translation. If it is a screenshot, only mention the most important parts.
-  If the image looked looks like google street view, try to guess where in the world it is. Do this in detail. It must be in a running text format.
+  } description for the image(s) in swedish. Translate all text into swedish. You don't have to read all text, and you should not mention that it is a translation. If it is a screenshot, only mention the most important parts.
+  If the image(s) looked looks like google street view, try to guess where in the world it is. Do this in detail. It must be in a running text format.
   `;
 
   if (shouldRoast) {
@@ -235,21 +235,23 @@ async function urlToDescription(url) {
       " Make sure to mention why the content of the image is very bad in a funny way.";
   }
 
+  const content = [
+    {
+      type: "text",
+      text: prompt,
+    },
+    ...urls.map((url) => ({
+      type: "image_url",
+      image_url: {
+        url,
+      },
+    })),
+  ];
+
   // Get description of the gif
   let message = {
     role: "user",
-    content: [
-      {
-        type: "text",
-        text: prompt,
-      },
-      {
-        type: "image_url",
-        image_url: {
-          url: url,
-        },
-      },
-    ],
+    content: content,
   };
 
   const completion = await openai.chat.completions.create({
