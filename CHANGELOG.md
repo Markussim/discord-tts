@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.5.0]
+
+### Changed
+
+- Significantly improved image description prompt by incorporating user comments.
+
+### Fixed
+
+- Now reads user comments when an image is attached.
+
+## [1.4.1]
+
+### Fixed
+
+- Fixed issue with not reading tenor gifs
+
 ## [1.4.0]
 
 ### Added

@@ -79,6 +79,21 @@ client.on(Events.MessageCreate, async (message) => {
       messageAttachments
     );
 
+    if (
+      messageContentWithoutMention.isImage &&
+      messageContentWithoutMention.userComment
+    ) {
+      let descriptionMessage = {
+        content: messageContentWithoutMention.userComment,
+        nickname: userNickname,
+        isImage: false,
+        userId: message.author.id,
+      };
+
+      // Add message to the queue
+      enqueue(descriptionMessage);
+    }
+
     let messageObject = {
       content: messageContentWithoutMention.text,
       nickname: userNickname,
@@ -116,11 +131,15 @@ async function replaceUrls(inputString, attachments) {
     };
   } else if (attachments.length > 0) {
     // If there are attachments, return a description
-    let description = await urlToDescription(attachments.slice(0, 5));
+    let description = await urlToDescription(
+      attachments.slice(0, 5),
+      inputString
+    );
 
     return {
       text: description,
       isImage: true,
+      userComment: inputString,
     };
   } else {
     // Get full url with http and path
@@ -218,7 +237,7 @@ async function gifToDescription(url) {
   return description;
 }
 
-async function urlToDescription(urls) {
+async function urlToDescription(urls, comment) {
   // Variable that is true 1 of 5 times
   const shouldRoast =
     Math.floor(Math.random() * 5) === 0 ||
@@ -227,12 +246,14 @@ async function urlToDescription(urls) {
   let prompt = `Write a ${
     shouldRoast ? "funny 2 sentence" : "serious 1 sentence"
   } description for the image(s) in swedish. Translate all text into swedish. You don't have to read all text, and you should not mention that it is a translation. If it is a screenshot, only mention the most important parts.
-  If the image(s) looked looks like google street view, try to guess where in the world it is. Do this in detail. It must be in a running text format.
+  If the image(s) looks like google street view, try to guess where in the world it is. Do this in detail. It must be in a running text format.
+  ${comment ? `User comment: "${comment}"` : ""}
   `;
 
   if (shouldRoast) {
-    prompt +=
-      " Make sure to mention why the content of the image is very bad in a funny way.";
+    prompt += ` Roast content of the image throughout the message. ${
+      comment ? `Roast the user comment too` : ""
+    }`;
   }
 
   const content = [
@@ -255,7 +276,7 @@ async function urlToDescription(urls) {
   };
 
   const completion = await openai.chat.completions.create({
-    model: "o3",
+    model: "gpt-5",
     messages: [message],
   });
 
