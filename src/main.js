@@ -213,7 +213,7 @@ async function gifToDescription(url) {
   const $ = cheerio.load(response.data);
   const gifUrl = $("meta[property='og:image']").attr("content");
 
-  let description = await urlToDescription(gifUrl);
+  let description = await urlToDescription([gifUrl]);
 
   return description;
 }
