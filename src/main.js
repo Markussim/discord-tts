@@ -108,6 +108,10 @@ client.on(Events.MessageCreate, async (message) => {
   }
 });
 
+client.once(Events.ClientReady, (c) => {
+  console.log(`Ready! Logged in as ${c.user.tag}`);
+});
+
 async function replaceUrls(inputString, attachments) {
   // Regular expression to match URLs
   const urlRegex =
