@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.5.1]
+
+### Fixed
+
+- Voice not working due to package issues
+
 ## [1.5.0]
 
 ### Changed
