@@ -249,13 +249,13 @@ async function urlToDescription(urls, comment) {
 
   let prompt = `Write a ${
     shouldRoast ? "funny 2 sentence" : "serious 1 sentence"
-  } description for the image(s) in swedish. Translate all text into swedish. You don't have to read all text, and you should not mention that it is a translation. If it is a screenshot, only mention the most important parts.
+  } description for the image(s) in Swedish. Translate all text into Swedish. You don't have to read all text, and you should not mention that it is a translation. If it is a screenshot, only mention the most important parts.
   If the image(s) looks like google street view, try to guess where in the world it is. Do this in detail. It must be in a running text format.
   ${comment ? `User comment: "${comment}"` : ""}
   `;
 
   if (shouldRoast) {
-    prompt += ` Roast content of the image throughout the message. ${
+    prompt += ` Roast content of the image throughout the message. You should swear as much as possible (Especially those starting with f), as all users are adults. Do not censor swears. ${
       comment ? `Roast the user comment too` : ""
     }`;
   }
@@ -280,13 +280,13 @@ async function urlToDescription(urls, comment) {
   };
 
   const completion = await openai.chat.completions.create({
-    model: "gpt-5",
+    model: "gpt-5.1",
     messages: [message],
   });
 
   let text = completion.choices[0].message.content;
 
-  return text;
+  return text.toLowerCase();
 }
 
 async function htmlToDescription(url) {
