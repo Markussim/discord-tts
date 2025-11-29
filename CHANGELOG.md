@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.5.3]
+
+### Added
+
+- Added option to force roasting by including the word "roast" in the message.
+
 ## [1.5.2]
 
 ### Updated

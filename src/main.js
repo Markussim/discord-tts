@@ -243,9 +243,17 @@ async function gifToDescription(url) {
 
 async function urlToDescription(urls, comment) {
   // Variable that is true 1 of 5 times
-  const shouldRoast =
+  let shouldRoast =
     Math.floor(Math.random() * 5) === 0 ||
     process.env.ALWAYS_ROAST?.toLowerCase() === "true";
+
+  if (comment.toLowerCase().includes("roast")) {
+    console.log("Forcing roast due to user comment.");
+    shouldRoast = true;
+
+    // Remove the word roast from the comment
+    comment = comment.replace(/roast/gi, "").trim();
+  }
 
   let prompt = `Write a ${
     shouldRoast ? "funny 2 sentence" : "serious 1 sentence"
