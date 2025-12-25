@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.5.4]
+
+### Fixed
+
+- Fixed issue with gifs not working due to lacking comment parameter
+
 ## [1.5.3]
 
 ### Added

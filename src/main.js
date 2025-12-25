@@ -247,7 +247,7 @@ async function urlToDescription(urls, comment) {
     Math.floor(Math.random() * 5) === 0 ||
     process.env.ALWAYS_ROAST?.toLowerCase() === "true";
 
-  if (comment.toLowerCase().includes("roast")) {
+  if (comment?.toLowerCase().includes("roast")) {
     console.log("Forcing roast due to user comment.");
     shouldRoast = true;
 
