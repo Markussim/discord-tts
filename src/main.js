@@ -256,14 +256,14 @@ async function urlToDescription(urls, comment) {
   }
 
   let prompt = `Write a ${
-    shouldRoast ? "funny 2 sentence" : "serious 1 sentence"
+    shouldRoast ? "funny max 20-30 words" : "serious max 10-20 words"
   } description for the image(s) in Swedish. Translate all text into Swedish. You don't have to read all text, and you should not mention that it is a translation. If it is a screenshot, only mention the most important parts.
   If the image(s) looks like google street view, try to guess where in the world it is. Do this in detail. It must be in a running text format.
   ${comment ? `User comment: "${comment}"` : ""}
   `;
 
   if (shouldRoast) {
-    prompt += ` Roast content of the image throughout the message. You should swear as much as possible (Especially those starting with f), as all users are adults. Do not censor swears. ${
+    prompt += ` Roast content of the image throughout the message. You should swear as much as possible (About every second word), as all users are adults. Do not censor swears. ${
       comment ? `Roast the user comment too` : ""
     }`;
   }
@@ -299,64 +299,36 @@ async function urlToDescription(urls, comment) {
 
 async function htmlToDescription(url) {
   try {
-    const response = await axios.get(url);
+    const { data } = await axios.get(url);
+    const $ = cheerio.load(data);
 
-    const $ = cheerio.load(response.data);
+    const headInfo = [
+      $("head title").text(),
+      $("meta[name='description']").attr("content"),
+      $("meta[property='og:title']").attr("content"),
+      $("meta[property='og:description']").attr("content"),
+    ]
+      .filter(Boolean)
+      .join(" | ");
 
-    let metaTagsArray = [];
+    const rawText = headInfo.replace(/\s+/g, " ").trim();
 
-    if ($("meta[name='description']").attr("content")) {
-      metaTagsArray.push($("meta[name='description']").attr("content"));
-    }
-
-    if ($("meta[property='og:description']").attr("content")) {
-      metaTagsArray.push($("meta[property='og:description']").attr("content"));
-    }
-
-    if ($("meta[name='twitter:description']").attr("content")) {
-      metaTagsArray.push($("meta[name='twitter:description']").attr("content"));
-    }
-
-    if ($("title").text()) {
-      metaTagsArray.push($("title").text());
-    }
-
-    let description = metaTagsArray.join(" | ");
-
-    console.log(`Description: ${description}`);
-
-    // Cut raw text to 1000 characters
-    rawText = description.substring(0, 1000);
-
-    const systemMessage = {
-      role: "system",
-      content: [
-        {
-          type: "text",
-          text: "What is this website? Write a 10 word description in swedish. Please start with 'URL för'.",
-        },
-      ],
-    };
-
-    const message = {
-      role: "user",
-      content: [
-        {
-          type: "text",
-          text: rawText,
-        },
-      ],
-    };
+    console.log(`Raw text: ${rawText}`);
 
     const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [systemMessage, message],
+      model: "gpt-5.1",
+      messages: [
+        {
+          role: "system",
+          content:
+            'Write a short (Under 20 words) description of the content of this website in swedish (If it is a youtube video and you can\'t figure out what video is it, just say "youtube länk"). Never include the URL in the description.',
+        },
+        { role: "user", content: rawText },
+      ],
     });
 
-    let text = completion.choices[0].message.content;
-
-    return text;
-  } catch (error) {
+    return completion.choices[0].message.content;
+  } catch (e) {
     return url;
   }
 }

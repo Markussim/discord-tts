@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.5.5]
+
+### Fixed
+
+- Shortened roast length to 20-30 words.
+- Improved roast prompt to swear more often.
+- Improved URL description prompt.
+
 ## [1.5.4]
 
 ### Fixed
