@@ -6,6 +6,10 @@ const { test } = require("./voice");
 const axios = require("axios");
 const cheerio = require("cheerio");
 const OpenAI = require("openai");
+const { createModuleLogger } = require("./logger");
+
+// Create module-specific logger
+const logger = createModuleLogger('main');
 
 // Set up OpenAI API
 const openai = new OpenAI(process.env.OPENAI_API_KEY);
@@ -21,11 +25,20 @@ client.on(Events.MessageCreate, async (message) => {
     const channel = message.guild.channels.cache.get(channelID);
 
     if (!channel) {
-      console.error(`Channel with ID ${channelID} not found.`);
+      logger.error(`Voice channel ${channelID} not found`, {
+        channelId: channelID,
+        guildName: message.guild?.name
+      });
       return;
     }
 
-    console.log(`Message received: ${message.content}`);
+    logger.info(`Message from ${message.author.username}`, {
+      content: message.content,
+      nickname: message.author.username,
+      userId: message.author.id,
+      channelName: message.channel.name,
+      guildName: message.guild.name
+    });
 
     const messageAttachmentsCollection = message.attachments;
 
@@ -40,7 +53,9 @@ client.on(Events.MessageCreate, async (message) => {
 
     // Check if voice channel is empty
     if (channel.members.size == 0) {
-      console.log("Channel is empty.");
+      logger.debug('Voice channel is empty', {
+        queueLength: channel.members.size
+      });
       return;
     }
 
@@ -55,7 +70,10 @@ client.on(Events.MessageCreate, async (message) => {
     ) {
       // Check if user is muted
       if (process.env.DEV != "TRUE" && !member.voice.mute) {
-        console.log("Ignoring message from user in voice channel.");
+        logger.debug(`Ignoring ${message.author.username} (unmuted in voice)`, {
+          nickname: message.author.username,
+          userId: message.author.id
+        });
         return;
       }
     }
@@ -71,7 +89,10 @@ client.on(Events.MessageCreate, async (message) => {
       client
     );
 
-    console.log(messageContentWithoutMention);
+    logger.debug('Processed message content', {
+      contentLength: messageContentWithoutMention.length,
+      isImage: messageAttachments.length > 0
+    });
 
     // Replace misc mention like things
     messageContentWithoutMention = await replaceUrls(
@@ -104,12 +125,19 @@ client.on(Events.MessageCreate, async (message) => {
     // Add message to the queue
     enqueue(messageObject);
   } catch (error) {
-    console.error(`Error: ${error.message}`);
+    logger.error('Failed to process message', {
+      error: error.message,
+      userId: message.author.id,
+      nickname: message.author.username
+    });
   }
 });
 
 client.once(Events.ClientReady, (c) => {
-  console.log(`Ready! Logged in as ${c.user.tag}`);
+  logger.info(`Bot ready as ${c.user.username}`, {
+    botUsername: c.user.username,
+    guildCount: c.guilds.cache.size
+  });
 });
 
 async function replaceUrls(inputString, attachments) {
@@ -127,7 +155,10 @@ async function replaceUrls(inputString, attachments) {
 
     let description = await gifToDescription([url]);
 
-    console.log(`Description: ${description}`);
+    logger.info('Generated GIF description', {
+      url: url.substring(0, 50) + '...',
+      description: description.substring(0, 100) + '...'
+    });
 
     return {
       text: description,
@@ -152,7 +183,7 @@ async function replaceUrls(inputString, attachments) {
     let replacedString = inputString;
 
     for (let fullUrl of fullUrls) {
-      console.log(`Full URL: ${fullUrl}`);
+      logger.debug(`Processing URL: ${fullUrl.substring(0, 50)}...`);
 
       let urlDescription = await htmlToDescription(fullUrl);
 
@@ -248,7 +279,9 @@ async function urlToDescription(urls, comment) {
     process.env.ALWAYS_ROAST?.toLowerCase() === "true";
 
   if (comment?.toLowerCase().includes("roast")) {
-    console.log("Forcing roast due to user comment.");
+    logger.info('🔥 Roast mode activated!', {
+      nickname: 'user'
+    });
     shouldRoast = true;
 
     // Remove the word roast from the comment
@@ -313,7 +346,7 @@ async function htmlToDescription(url) {
 
     const rawText = headInfo.replace(/\s+/g, " ").trim();
 
-    console.log(`Raw text: ${rawText}`);
+    logger.debug(`Extracted ${rawText.length} chars from ${url.substring(0, 30)}...`);
 
     const completion = await openai.chat.completions.create({
       model: "gpt-5.1",
@@ -327,8 +360,13 @@ async function htmlToDescription(url) {
       ],
     });
 
-    return completion.choices[0].message.content;
+    const description = completion.choices[0].message.content;
+    logger.info(`Generated description: "${description.substring(0, 50)}..."`);
+    return description;
   } catch (e) {
+    logger.warn(`Failed to describe ${url.substring(0, 30)}...`, {
+      error: e.message
+    });
     return url;
   }
 }

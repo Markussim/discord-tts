@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.5.6]
+
+### Fixed
+
+- Improved logging.
+
 ## [1.5.5]
 
 ### Fixed

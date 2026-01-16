@@ -7,6 +7,10 @@ const {
 const textToSpeech = require("@google-cloud/text-to-speech");
 const { Translate } = require("@google-cloud/translate").v2;
 const { Readable } = require("stream");
+const { createModuleLogger } = require("./logger");
+
+// Create module-specific logger
+const logger = createModuleLogger('voice');
 
 // Import client from src/main.js
 const { client, channelID, sayUser } = require("./client");
@@ -26,7 +30,13 @@ async function queueListener() {
     return;
   }
 
-  console.log(`Playing message: ${messageObject.content}`);
+  logger.info(`🎵 Playing message from ${messageObject.nickname}`, {
+    messageId: messageObject.id,
+    nickname: messageObject.nickname,
+    userId: messageObject.userId,
+    contentLength: messageObject.content.length,
+    isImage: messageObject.isImage
+  });
 
   // Play the message
   await playMessage(messageObject);
@@ -55,7 +65,10 @@ async function playMessage(messageObject) {
   });
   // Play the audio
   if (!connection) {
-    console.error("The bot is not connected to a voice channel.");
+    logger.error('Failed to join voice channel', {
+      channelId: channelID,
+      guildName: channel.guild.name
+    });
     return;
   }
 
@@ -85,7 +98,11 @@ async function playMessage(messageObject) {
 
     // On error, destroy the connection
     player.on("error", async (error) => {
-      console.error(`Error: ${error.message}`);
+      logger.error('Audio playback failed', {
+        error: error.message,
+        messageId: messageObject?.id,
+        nickname: messageObject?.nickname
+      });
       connection.destroy();
       resolve();
     });
@@ -124,11 +141,13 @@ async function createAudioFromText(
   if (text.length < 20) {
     // Set language to "sv" if the text is less than 10 characters
     detectedLanguage = "sv";
-    console.log(`message is less than 20 characters`);
+    logger.debug(`Text too short, using Swedish (${text.length} chars)`);
   } else if (text.length > 5) {
     // Detect language of "text"
     const [detection] = await translate.detect(text);
-    console.log(`Detected language: ${detection.language}`);
+    logger.info(`Language detected: ${detection.language} (${Math.round(detection.confidence * 100)}% confidence)`, {
+      nickname: userNickname
+    });
 
     detectedLanguage = detection.language;
   }
@@ -142,7 +161,7 @@ async function createAudioFromText(
   }
 
   if (!voiceName) {
-    console.error("Voice not found");
+    logger.warn(`No custom voice for ${userNickname}, using default`);
     voiceName = "sv-SE-Wavenet-C";
   }
 
@@ -151,13 +170,29 @@ async function createAudioFromText(
   }
 
   if (!language) {
-    console.error("Language not found");
+    logger.warn(`Language unknown for ${userNickname}, using Swedish`);
     language = "sv-SE";
   }
 
+  logger.debug(`TTS: ${language} voice ${voiceName.split('-').pop()} for ${userNickname}`, {
+    language,
+    voiceName,
+    isImage
+  });
+
   // Generate the audio
+  const formattedText = formatText(text, userNickname, isImage, language);
+
+  // Log what will actually be spoken
+  logger.info(`Speaking as ${userNickname}`, {
+    nickname: userNickname,
+    language,
+    voiceName: voiceName.split('-').pop(),
+    ttsText: formattedText
+  });
+
   const request = {
-    input: { text: formatText(text, userNickname, isImage, language) },
+    input: { text: formattedText },
     // Select the language and SSML voice gender (optional)
     voice: { languageCode: "en-US", ssmlGender: "NEUTRAL" },
     // select the type of audio encoding
@@ -182,7 +217,11 @@ let lastUser = "";
 let lastMessageTime = Date.now();
 
 function formatText(text, userNickname, isImage = false, language) {
-  console.log(`Last user: ${lastUser}`);
+  logger.debug(`Formatting for ${userNickname} (${language})`, {
+    lastUser,
+    nickname: userNickname,
+    isImage
+  });
 
   let oneMinute = 60000;
 
@@ -191,6 +230,10 @@ function formatText(text, userNickname, isImage = false, language) {
     Date.now() - lastMessageTime < oneMinute &&
     !isImage
   ) {
+    logger.debug(`Same user continues speaking`, {
+      nickname: userNickname,
+      ttsText: text
+    });
     return text;
   }
 
@@ -212,6 +255,13 @@ function formatText(text, userNickname, isImage = false, language) {
       formattedText = `${userNickname} says: ${text}`;
     }
   }
+
+  logger.debug(`Adding speaker introduction for ${userNickname}`, {
+    nickname: userNickname,
+    language,
+    isImage,
+    timeSinceLastMessage: Date.now() - lastMessageTime
+  });
 
   return formattedText;
 }
