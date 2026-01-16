@@ -5,6 +5,7 @@
 ### Fixed
 
 - Improved logging.
+- Added ENV variable validation on startup.
 
 ## [1.5.5]
 
