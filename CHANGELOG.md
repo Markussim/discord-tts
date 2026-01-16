@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.5.6]
+
+### Fixed
+
+- Improved logging.
+- Added ENV variable validation on startup.
+
 ## [1.5.5]
 
 ### Fixed
