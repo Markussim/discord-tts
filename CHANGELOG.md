@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.5.7]
+
+## Updated
+
+- Bumped OpenAI model to gpt-5.5
+
 ## [1.5.6]
 
 ### Fixed

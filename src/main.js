@@ -9,7 +9,7 @@ const OpenAI = require("openai");
 const { createModuleLogger } = require("./logger");
 
 // Create module-specific logger
-const logger = createModuleLogger('main');
+const logger = createModuleLogger("main");
 
 // Set up OpenAI API
 const openai = new OpenAI(process.env.OPENAI_API_KEY);
@@ -27,7 +27,7 @@ client.on(Events.MessageCreate, async (message) => {
     if (!channel) {
       logger.error(`Voice channel ${channelID} not found`, {
         channelId: channelID,
-        guildName: message.guild?.name
+        guildName: message.guild?.name,
       });
       return;
     }
@@ -37,7 +37,7 @@ client.on(Events.MessageCreate, async (message) => {
       nickname: message.author.username,
       userId: message.author.id,
       channelName: message.channel.name,
-      guildName: message.guild.name
+      guildName: message.guild.name,
     });
 
     const messageAttachmentsCollection = message.attachments;
@@ -48,13 +48,13 @@ client.on(Events.MessageCreate, async (message) => {
 
     // Filter out attachments that are not images
     messageAttachments = messageAttachments.filter((attachment) =>
-      attachment.match(/\.(jpeg|jpg|gif|png)(\?.*)?$/i)
+      attachment.match(/\.(jpeg|jpg|gif|png)(\?.*)?$/i),
     );
 
     // Check if voice channel is empty
     if (channel.members.size == 0) {
-      logger.debug('Voice channel is empty', {
-        queueLength: channel.members.size
+      logger.debug("Voice channel is empty", {
+        queueLength: channel.members.size,
       });
       return;
     }
@@ -72,7 +72,7 @@ client.on(Events.MessageCreate, async (message) => {
       if (process.env.DEV != "TRUE" && !member.voice.mute) {
         logger.debug(`Ignoring ${message.author.username} (unmuted in voice)`, {
           nickname: message.author.username,
-          userId: message.author.id
+          userId: message.author.id,
         });
         return;
       }
@@ -86,18 +86,18 @@ client.on(Events.MessageCreate, async (message) => {
     // Replace misc mention like things
     messageContentWithoutMention = replaceMisc(
       messageContentWithoutMention,
-      client
+      client,
     );
 
-    logger.debug('Processed message content', {
+    logger.debug("Processed message content", {
       contentLength: messageContentWithoutMention.length,
-      isImage: messageAttachments.length > 0
+      isImage: messageAttachments.length > 0,
     });
 
     // Replace misc mention like things
     messageContentWithoutMention = await replaceUrls(
       messageContentWithoutMention,
-      messageAttachments
+      messageAttachments,
     );
 
     if (
@@ -125,10 +125,10 @@ client.on(Events.MessageCreate, async (message) => {
     // Add message to the queue
     enqueue(messageObject);
   } catch (error) {
-    logger.error('Failed to process message', {
+    logger.error("Failed to process message", {
       error: error.message,
       userId: message.author.id,
-      nickname: message.author.username
+      nickname: message.author.username,
     });
   }
 });
@@ -136,7 +136,7 @@ client.on(Events.MessageCreate, async (message) => {
 client.once(Events.ClientReady, (c) => {
   logger.info(`Bot ready as ${c.user.username}`, {
     botUsername: c.user.username,
-    guildCount: c.guilds.cache.size
+    guildCount: c.guilds.cache.size,
   });
 });
 
@@ -155,9 +155,9 @@ async function replaceUrls(inputString, attachments) {
 
     let description = await gifToDescription([url]);
 
-    logger.info('Generated GIF description', {
-      url: url.substring(0, 50) + '...',
-      description: description.substring(0, 100) + '...'
+    logger.info("Generated GIF description", {
+      url: url.substring(0, 50) + "...",
+      description: description.substring(0, 100) + "...",
     });
 
     return {
@@ -168,7 +168,7 @@ async function replaceUrls(inputString, attachments) {
     // If there are attachments, return a description
     let description = await urlToDescription(
       attachments.slice(0, 5),
-      inputString
+      inputString,
     );
 
     return {
@@ -223,7 +223,7 @@ function replaceMentions(message) {
   mentionedMap.forEach((value, key) => {
     messageContent = messageContent.replace(
       new RegExp(`<@!?${key}>`, "g"),
-      "@" + value
+      "@" + value,
     );
   });
 
@@ -231,7 +231,7 @@ function replaceMentions(message) {
   mentionedRoleMap.forEach((value, key) => {
     messageContent = messageContent.replace(
       new RegExp(`<@&${key}>`, "g"),
-      "@" + value
+      "@" + value,
     );
   });
 
@@ -279,8 +279,8 @@ async function urlToDescription(urls, comment) {
     process.env.ALWAYS_ROAST?.toLowerCase() === "true";
 
   if (comment?.toLowerCase().includes("roast")) {
-    logger.info('🔥 Roast mode activated!', {
-      nickname: 'user'
+    logger.info("🔥 Roast mode activated!", {
+      nickname: "user",
     });
     shouldRoast = true;
 
@@ -321,7 +321,7 @@ async function urlToDescription(urls, comment) {
   };
 
   const completion = await openai.chat.completions.create({
-    model: "gpt-5.1",
+    model: "gpt-5.5",
     messages: [message],
   });
 
@@ -346,7 +346,9 @@ async function htmlToDescription(url) {
 
     const rawText = headInfo.replace(/\s+/g, " ").trim();
 
-    logger.debug(`Extracted ${rawText.length} chars from ${url.substring(0, 30)}...`);
+    logger.debug(
+      `Extracted ${rawText.length} chars from ${url.substring(0, 30)}...`,
+    );
 
     const completion = await openai.chat.completions.create({
       model: "gpt-5.1",
@@ -365,7 +367,7 @@ async function htmlToDescription(url) {
     return description;
   } catch (e) {
     logger.warn(`Failed to describe ${url.substring(0, 30)}...`, {
-      error: e.message
+      error: e.message,
     });
     return url;
   }

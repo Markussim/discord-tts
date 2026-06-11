@@ -10,7 +10,7 @@ const { Readable } = require("stream");
 const { createModuleLogger } = require("./logger");
 
 // Create module-specific logger
-const logger = createModuleLogger('voice');
+const logger = createModuleLogger("voice");
 
 // Import client from src/main.js
 const { client, channelID, sayUser } = require("./client");
@@ -35,7 +35,7 @@ async function queueListener() {
     nickname: messageObject.nickname,
     userId: messageObject.userId,
     contentLength: messageObject.content.length,
-    isImage: messageObject.isImage
+    isImage: messageObject.isImage,
   });
 
   // Play the message
@@ -65,9 +65,9 @@ async function playMessage(messageObject) {
   });
   // Play the audio
   if (!connection) {
-    logger.error('Failed to join voice channel', {
+    logger.error("Failed to join voice channel", {
       channelId: channelID,
-      guildName: channel.guild.name
+      guildName: channel.guild.name,
     });
     return;
   }
@@ -77,7 +77,7 @@ async function playMessage(messageObject) {
     message,
     userNickname,
     isImage,
-    messageObject.userId
+    messageObject.userId,
   );
 
   const resource = createAudioResource(audio);
@@ -98,10 +98,10 @@ async function playMessage(messageObject) {
 
     // On error, destroy the connection
     player.on("error", async (error) => {
-      logger.error('Audio playback failed', {
+      logger.error("Audio playback failed", {
         error: error.message,
         messageId: messageObject?.id,
-        nickname: messageObject?.nickname
+        nickname: messageObject?.nickname,
       });
       connection.destroy();
       resolve();
@@ -130,7 +130,7 @@ async function createAudioFromText(
   text,
   userNickname,
   isImage = false,
-  userId
+  userId,
 ) {
   let voiceName = voices[userId];
 
@@ -145,9 +145,12 @@ async function createAudioFromText(
   } else if (text.length > 5) {
     // Detect language of "text"
     const [detection] = await translate.detect(text);
-    logger.info(`Language detected: ${detection.language} (${Math.round(detection.confidence * 100)}% confidence)`, {
-      nickname: userNickname
-    });
+    logger.info(
+      `Language detected: ${detection.language} (${Math.round(detection.confidence * 100)}% confidence)`,
+      {
+        nickname: userNickname,
+      },
+    );
 
     detectedLanguage = detection.language;
   }
@@ -174,11 +177,14 @@ async function createAudioFromText(
     language = "sv-SE";
   }
 
-  logger.debug(`TTS: ${language} voice ${voiceName.split('-').pop()} for ${userNickname}`, {
-    language,
-    voiceName,
-    isImage
-  });
+  logger.debug(
+    `TTS: ${language} voice ${voiceName.split("-").pop()} for ${userNickname}`,
+    {
+      language,
+      voiceName,
+      isImage,
+    },
+  );
 
   // Generate the audio
   const formattedText = formatText(text, userNickname, isImage, language);
@@ -187,8 +193,8 @@ async function createAudioFromText(
   logger.info(`Speaking as ${userNickname}`, {
     nickname: userNickname,
     language,
-    voiceName: voiceName.split('-').pop(),
-    ttsText: formattedText
+    voiceName: voiceName.split("-").pop(),
+    ttsText: formattedText,
   });
 
   const request = {
@@ -220,7 +226,7 @@ function formatText(text, userNickname, isImage = false, language) {
   logger.debug(`Formatting for ${userNickname} (${language})`, {
     lastUser,
     nickname: userNickname,
-    isImage
+    isImage,
   });
 
   let oneMinute = 60000;
@@ -232,7 +238,7 @@ function formatText(text, userNickname, isImage = false, language) {
   ) {
     logger.debug(`Same user continues speaking`, {
       nickname: userNickname,
-      ttsText: text
+      ttsText: text,
     });
     return text;
   }
@@ -260,7 +266,7 @@ function formatText(text, userNickname, isImage = false, language) {
     nickname: userNickname,
     language,
     isImage,
-    timeSinceLastMessage: Date.now() - lastMessageTime
+    timeSinceLastMessage: Date.now() - lastMessageTime,
   });
 
   return formattedText;
