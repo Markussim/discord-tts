@@ -1,10 +1,19 @@
 # Changelog
 
-## [1.5.7]
+## [1.5.8]
 
 ## Updated
 
 - Bumped OpenAI model to gpt-5.5
+
+## [1.5.7]
+
+### Fixed
+
+- Fixed Google Cloud authentication deprecation warnings by updating dependencies:
+  - Updated @google-cloud/text-to-speech from 6.3.0 to 6.4.0
+  - Updated @google-cloud/translate from 9.2.0 to 9.3.0
+  - Updated google-auth-library from 10.4.0 to 10.5.0
 
 ## [1.5.6]
 
